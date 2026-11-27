@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f4f3ed">
+  <meta name="description" content="弈境 Gomoku Studio — 可复盘、可分析的 AI 五子棋。支持本地引擎、自定义 AI 与棋谱导出。">
+  <title>弈境 · Gomoku Studio</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23242824'/%3E%3Ccircle cx='23' cy='23' r='10' fill='%23e3b97d'/%3E%3Ccircle cx='42' cy='42' r='10' fill='%23f6f4ec'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/styles.css">
+  <script type="module" src="/app.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="/" aria-label="弈境首页"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="brand-chinese">弈境</span><span class="brand-english">GOMOKU STUDIO</span></a>
+    <nav aria-label="主导航"><button class="nav-link active" id="nav-play">对弈<span>PLAY</span></button><button class="nav-link" id="nav-history">棋谱<span>LIBRARY</span></button><button class="nav-link" id="nav-settings">设置<span>SETTINGS</span></button></nav>
+    <div class="header-status"><span class="status-dot"></span><span id="connection-label">正在连接</span></div>
+  </header>
+
+  <main class="workspace">
+    <section class="page-intro">
+      <div><p class="eyebrow"><span class="tiny-rule"></span> THE ART OF FIVE IN A ROW</p><h1>每一步，皆有章法<span>。</span></h1><p class="intro-copy">落子之间，遇见更好的自己。与 AI 对弈，让思考更进一步。</p></div>
+      <button id="new-game" class="button button-dark"><span data-icon="plus"></span>开启新对局<span class="button-arrow">↗</span></button>
+    </section>
+
+    <div class="game-layout">
+      <section class="game-card" aria-label="五子棋对弈">
+        <div class="game-toolbar"><div class="game-heading"><span class="status-dot" id="game-dot"></span><h2 id="game-title">人机对弈</h2><span class="tag" id="difficulty-tag">标准</span></div><div class="game-meta"><span id="save-status">正在载入</span><span class="meta-divider"></span><span id="move-count">第 0 手</span></div></div>
+        <div class="board-area"><div class="board-coordinates top-coordinates" aria-hidden="true"></div><div class="board-coordinates left-coordinates" aria-hidden="true"></div><div class="wood-board"><svg id="board" viewBox="0 0 660 660" role="grid" aria-label="十五路五子棋棋盘，使用方向键选择位置，空格或回车落子" aria-rowcount="15" aria-colcount="15" tabindex="0"></svg></div><div class="board-signature" aria-hidden="true">弈境 · GOMOKU</div><div class="board-overlay" id="board-overlay" hidden><span class="spinner"></span><span id="board-overlay-text">AI 正在思考</span></div></div>
+        <div class="players-bar"><div class="player-info" id="black-player"><span class="player-stone black"></span><div><strong id="black-name">你 · 黑棋</strong><span id="black-subtitle">先手</span></div><span class="turn-indicator">落子中</span></div><span class="versus">VS</span><div class="player-info" id="white-player"><span class="player-stone white"></span><div><strong id="white-name">弈境 AI · 白棋</strong><span id="white-subtitle">后手</span></div><span class="turn-indicator">落子中</span></div></div>
+        <div class="board-actions"><button class="tool-button" id="undo"><span data-icon="undo"></span>悔棋</button><button class="tool-button" id="hint"><span data-icon="bulb"></span>落子提示</button><button class="tool-button" id="analyze"><span data-icon="chart"></span>分析棋局</button><div class="export-wrap"><button class="tool-button" id="export" aria-expanded="false" aria-controls="export-menu"><span data-icon="download"></span>导出棋谱<span data-icon="chevron"></span></button><div class="export-menu" id="export-menu" hidden><a id="export-sgf" download>SGF 棋谱<span>通用棋谱格式</span></a><a id="export-json" download>JSON 数据<span>完整对局与分析</span></a></div></div></div>
+        <div class="replay-controls" id="replay-controls" hidden><div class="replay-top"><strong>棋谱复盘</strong><span id="replay-label">0 / 0 手</span><button id="exit-replay">返回对局 ↗</button></div><div class="replay-transport"><button id="replay-first" aria-label="第一步"><span data-icon="first"></span></button><button id="replay-prev" aria-label="上一步"><span data-icon="prev"></span></button><input id="replay-slider" type="range" min="0" max="0" value="0" aria-label="选择复盘手数"><button id="replay-next" aria-label="下一步"><span data-icon="next"></span></button><button id="replay-last" aria-label="最后一步"><span data-icon="last"></span></button></div></div>
+      </section>
+
+      <aside class="insights-column" aria-label="AI 分析与对局信息">
+        <section class="coach-card"><div class="coach-header"><div class="coach-symbol" data-icon="sparkle"></div><div><h2>你的 AI 棋友</h2><p>观察 · 思考 · 进步</p></div><span class="live-badge" id="engine-badge">LOCAL</span></div>
+          <div class="position-heading"><span>当前局势</span><span class="position-label" id="advantage-label">等待开局</span></div><div class="evaluation-bar" aria-label="局势评估"><span id="evaluation-fill"></span></div><div class="evaluation-legend"><span><i class="mini-stone black"></i>黑棋</span><span id="evaluation-caption">本地引擎实时评估</span><span>白棋<i class="mini-stone white"></i></span></div>
+          <div class="coach-divider"></div><div class="section-label"><span data-icon="eye"></span>局势洞察<span class="micro-label">INSIGHT</span></div><h3 id="insight-title">好棋，始于从容思考。</h3><p class="insight-text" id="insight-text">在棋盘上落下第一子。每一步都会自动保存，点击「落子提示」可获得局面建议。</p>
+          <div id="move-feedback" class="move-feedback" hidden><span id="quality-badge" class="quality-badge"></span><p id="quality-text"></p></div>
+          <div class="recommendation" id="recommendation"><div class="recommendation-top"><span>推荐落点</span><span data-icon="crosshair"></span></div><div class="recommendation-main"><strong id="recommendation-coordinate">—</strong><span id="recommendation-reason">点击「落子提示」，寻找下一步</span></div></div>
+          <div class="threat-list" id="threat-list" hidden></div><p class="coach-notice" id="coach-notice"><span data-icon="info"></span><span>本地引擎已就绪，无需 API 密钥即可对弈。</span></p>
+          <details class="agent-trace" id="agent-trace" hidden><summary>查看 Agent 思考过程<span data-icon="chevron"></span></summary><ol id="agent-steps"></ol></details>
+        </section>
+        <section class="session-card"><div class="section-label">对局档案<span class="micro-label">SESSION</span></div><dl><div><dt>对局模式</dt><dd id="session-mode">人机对弈</dd></div><div><dt>执子 / 难度</dt><dd id="session-side">黑棋 / 标准</dd></div><div><dt>对局状态</dt><dd id="session-status">准备中</dd></div><div><dt>保存方式</dt><dd><span class="status-dot"></span>SQLite 自动存储</dd></div></dl><button class="history-link" id="open-history">浏览历史棋谱<span>↗</span></button></section>
+        <div class="rule-note"><span data-icon="info"></span><p>自由五子棋 · 15 × 15 棋盘<br>黑棋先行，任一方向连成五子或以上获胜，无禁手。</p></div>
+      </aside>
+    </div>
+    <footer class="site-footer"><span>弈境 <span class="footer-dot">·</span> A LITTLE MORE THOUGHT, A BETTER NEXT MOVE.</span><span>落子有据，成长有迹。</span></footer>
+  </main>
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div><div class="sr-only" id="announcer" aria-live="polite"></div>
+
+  <dialog id="new-dialog"><form id="new-form"><div class="dialog-top"><div><p class="eyebrow">A FRESH PERSPECTIVE</p><h2>开启一局新思考</h2></div><button type="button" class="icon-button dialog-close" aria-label="关闭"><span data-icon="close"></span></button></div><p class="dialog-description">当前对局会自动保存在棋谱中，随时回来继续。</p><fieldset><legend>对局模式</legend><div class="choice-grid"><label class="choice"><input type="radio" name="mode" value="ai" checked><span><strong>与 AI 对弈</strong><small>有思路，也有好对手</small></span></label><label class="choice"><input type="radio" name="mode" value="local"><span><strong>本地双人</strong><small>与身边的棋友切磋</small></span></label></div></fieldset><fieldset id="ai-game-options"><legend>棋力难度</legend><div class="choice-grid three"><label class="choice compact"><input type="radio" name="difficulty" value="easy"><span>入门</span></label><label class="choice compact"><input type="radio" name="difficulty" value="standard" checked><span>标准</span></label><label class="choice compact"><input type="radio" name="difficulty" value="hard"><span>进阶</span></label></div><legend class="second-legend">你的执子</legend><div class="choice-grid"><label class="choice compact"><input type="radio" name="humanColor" value="1" checked><span><i class="mini-stone black"></i>黑棋 · 先手</span></label><label class="choice compact"><input type="radio" name="humanColor" value="2"><span><i class="mini-stone white"></i>白棋 · 后手</span></label></div></fieldset><button class="button button-dark full-width" type="submit">开始对弈<span>↗</span></button></form></dialog>
+
+  <dialog id="settings-dialog"><form id="settings-form"><div class="dialog-top"><div><p class="eyebrow">MAKE IT YOUR OWN</p><h2>接入你的 AI</h2></div><button type="button" class="icon-button dialog-close" aria-label="关闭"><span data-icon="close"></span></button></div><p class="dialog-description">支持 OpenAI 兼容接口。AI Agent 会结合棋盘工具提供分析；未配置时使用内置本地引擎。</p><label class="form-label" for="ai-base-url">API Base URL</label><input class="text-input" type="url" id="ai-base-url" placeholder="https://api.openai.com/v1" autocomplete="url"><label class="form-label" for="ai-model">模型名称</label><input class="text-input" id="ai-model" placeholder="填写服务商提供的模型 ID" maxlength="150"><label class="form-label" for="ai-api-key">API Key</label><input class="text-input" type="password" id="ai-api-key" placeholder="仅在本次页面会话中使用" autocomplete="off" spellcheck="false"><p class="settings-note">密钥仅保留在当前页面内存中，刷新后需重新输入。请求经本应用后端转发给你填写的服务商。服务端环境变量也可配置默认 AI。</p><div class="settings-state" id="settings-state"></div><div class="dialog-actions"><button class="button button-quiet" type="button" id="clear-ai">使用本地引擎</button><button class="button button-dark" type="submit">保存设置<span data-icon="check"></span></button></div></form></dialog>
+
+  <dialog id="history-dialog" class="history-dialog"><div class="dialog-top"><div><p class="eyebrow">EVERY MOVE TELLS A STORY</p><h2>你的对局棋谱</h2></div><button type="button" class="icon-button dialog-close" aria-label="关闭"><span data-icon="close"></span></button></div><p class="dialog-description">每一次思考，都值得回看。继续对局，或逐手复盘。</p><div id="history-list" class="history-list"></div></dialog>
+</body>
+</html>

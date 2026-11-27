@@ -1,6 +1,6 @@
 {
   "name": "yijing-gomoku-studio",
-  "version": "0.1.0",
+  "version": "0.4.0",
   "private": true,
   "description": "弈境：支持 SQLite 棋谱、AI Agent 与对局分析的全栈五子棋应用",
   "type": "module",
