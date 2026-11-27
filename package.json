@@ -1,10 +1,10 @@
 {
   "name": "yijing-gomoku-studio",
-  "version": "0.4.1",
+  "version": "0.5.0",
   "private": true,
   "description": "弈境：支持 SQLite 棋谱、AI Agent 与对局分析的全栈五子棋应用",
   "type": "module",
   "engines": { "node": ">=24.0.0" },
-  "scripts": { "start": "node --env-file-if-exists=.env server.js", "test": "node --test", "check": "node --check server.js && node --test" },
+  "scripts": { "start": "node --env-file-if-exists=.env server.js", "test": "node --test", "build:pages": "node scripts/build-pages.mjs", "check": "node --check server.js && node --test" },
   "license": "MIT"
 }

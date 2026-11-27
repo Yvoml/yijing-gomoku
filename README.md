@@ -2,11 +2,13 @@
 
 一个包含前端、后端与 SQLite 数据库的五子棋 Web 应用。支持 AI 对战、同屏双人、落子点评、局面分析、历史对局复盘，以及 JSON / SGF 棋谱导出。
 
-[公开仓库](https://github.com/Yvoml/yijing-gomoku) · [项目介绍页](https://yvoml.github.io/yijing-gomoku/) · [迭代记录](CHANGELOG.md)
+[直接在线对弈](https://yvoml.github.io/yijing-gomoku/) · [公开仓库](https://github.com/Yvoml/yijing-gomoku) · [迭代记录](CHANGELOG.md)
 
 [桌面截图](docs/screenshots/desktop.png) · [手机截图](docs/screenshots/mobile.png) · [验证记录](docs/VALIDATION.md)
 
-当前交付本地完整应用和 GitHub Pages 项目介绍页。云端对局服务尚未启用；Pages 上的页面提供源码与运行指南。
+打开上面的在线地址即可对弈，无需安装或启动服务器。GitHub Pages 版使用浏览器本地引擎和 IndexedDB 保存棋谱；清除网站数据或更换浏览器不会自动同步，重要对局请导出。
+
+同时保留 Node.js + SQLite 的完整后端版本，适合本地使用或部署到自己的服务器。两种版本支持相同的五子棋规则、对局模式、复盘和 JSON / SGF 导出。
 
 ## 启动
 
@@ -37,7 +39,9 @@ node --test
 
 ## 接入自己的 AI
 
-在应用的「设置」中填写 Base URL、模型名和 API Key。Base URL 是兼容服务的 API 根路径，例如 `https://api.openai.com/v1`，不包含 `/chat/completions`。请求经本应用后端转发，不在棋谱或数据库中保存 Key。
+在应用的「设置」中填写 Base URL、模型名和 API Key。Base URL 是兼容服务的 API 根路径，例如 `https://api.openai.com/v1`，不包含 `/chat/completions`。Key 不写入棋谱或数据库。
+
+在线网页版由浏览器直接连接填写的 HTTPS 接口，需要服务商允许跨域（CORS）请求。密钥只保留在当前页面内存中，不写入 IndexedDB 或 Web Storage；页面刷新后需重新输入。服务不可用时自动回退到本地 AI。Node.js 版本通过本应用后端转发请求。
 
 也可以给后端配置环境变量：
 
@@ -60,11 +64,11 @@ node --test
 
 ## 部署
 
-GitHub 保存源码、提交历史和 CI 结果；GitHub Pages 发布项目介绍页。运行后端与数据库的完整应用请部署到支持 **Node.js 24 + 持久磁盘** 的平台。
+GitHub 保存源码、提交历史和 CI 结果；GitHub Pages 发布可以直接对弈的浏览器版。需要服务端 SQLite 时，可把 Node.js 版本部署到支持 **Node.js 24 + 持久磁盘** 的平台。
 
 仓库提供 Dockerfile 和 Render Blueprint。Render 配置采用付费 `starter` 服务及 1 GB 持久磁盘，应用 Blueprint 前请在平台查看实际费用。源码推送本身不会创建付费服务。
 
-详见 [部署指南](docs/DEPLOYMENT.md) 和 [架构说明](docs/ARCHITECTURE.md)。部署成功后，将仓库变量 `LIVE_APP_URL` 设为应用的 HTTPS 地址并运行 `Project page` 工作流，项目页会出现「开始对弈」入口。
+详见 [部署指南](docs/DEPLOYMENT.md) 和 [架构说明](docs/ARCHITECTURE.md)。推送网页、浏览器引擎或构建脚本变更后，「网页发布」工作流会先执行测试，再部署在线对弈页面。
 
 ## 迭代方式
 

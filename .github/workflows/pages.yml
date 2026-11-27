@@ -1,12 +1,16 @@
-name: Project page
+name: 网页发布
 
 on:
   push:
     branches: [main, master]
     paths:
       - '.github/workflows/pages.yml'
-      - 'README.md'
-      - 'docs/**'
+      - 'public/**'
+      - 'browser/**'
+      - 'lib/engine.js'
+      - 'scripts/build-pages.mjs'
+      - 'test/**'
+      - 'package.json'
   workflow_dispatch:
 
 permissions:
@@ -21,39 +25,18 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
           node-version: '24'
           package-manager-cache: false
+      - name: 验证规则、接口与网页版
+        run: node --test
       - uses: actions/configure-pages@v5
-      - name: Build project landing page
-        env:
-          LIVE_APP_URL: ${{ vars.LIVE_APP_URL }}
-          REPOSITORY: ${{ github.repository }}
-        run: |
-          mkdir -p _site
-          node --input-type=module <<'NODE'
-          import { writeFileSync } from 'node:fs';
-          const escape = (value) => String(value).replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
-          const repo = 'https://github.com/' + process.env.REPOSITORY;
-          let app = '';
-          try {
-            const url = new URL(process.env.LIVE_APP_URL || '');
-            if (url.protocol === 'https:') app = url.href;
-          } catch {}
-          const action = app
-            ? `<a class="button" href="${escape(app)}">开始对弈 <span aria-hidden="true">↗</span></a><p class="status">完整应用已连接 · 对局由服务端保存</p>`
-            : `<a class="button" href="${repo}#启动">本地运行指南 <span aria-hidden="true">↗</span></a><p class="status">完整应用可本地运行 · 云端对局服务尚未启用</p>`;
-          writeFileSync('_site/index.html', `<!doctype html>
-          <html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="弈境：支持 AI 对战、局面分析、对局保存与棋谱导出的开源五子棋应用。"><title>弈境 · Gomoku Studio</title>
-          <style>*{box-sizing:border-box}body{margin:0;background:#f7f5ef;color:#242720;font-family:system-ui,-apple-system,"Microsoft YaHei",sans-serif}a{color:inherit}header,main,footer{max-width:1120px;margin:auto;padding:30px 32px}header{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #dedfd3}.brand{font-size:20px;font-weight:700;letter-spacing:.2em}.brand small{font-size:10px;letter-spacing:.13em;margin-left:14px;color:#6c7264}header a{text-decoration:none;font-size:14px}main{padding-top:80px}.hero{display:grid;grid-template-columns:1.15fr 1fr;gap:70px;align-items:center}.eyebrow{color:#897c4b;font-size:12px;letter-spacing:.22em}h1{font-family:Georgia,"Songti SC",SimSun,serif;font-weight:500;font-size:64px;line-height:1.22;margin:22px 0}p{font-size:16px;line-height:1.9;color:#6e7368;max-width:470px}.button{display:inline-flex;gap:38px;background:#303b2d;color:#fff;text-decoration:none;padding:17px 24px;margin-top:20px;border-radius:5px;font-size:14px}.status{font-size:12px;margin-top:14px}.board{aspect-ratio:1;background:#d9b67a;padding:27px;box-shadow:0 20px 45px #3a331716;border:1px solid #bb9659;border-radius:6px;position:relative;transform:rotate(-3deg)}.grid{width:100%;height:100%;background-image:linear-gradient(#69563270 1px,transparent 1px),linear-gradient(90deg,#69563270 1px,transparent 1px);background-size:7.142857% 7.142857%;border-right:1px solid #69563270;border-bottom:1px solid #69563270;position:relative}.stone{position:absolute;width:6.2%;aspect-ratio:1;border-radius:50%;transform:translate(-50%,-50%);box-shadow:2px 3px 4px #0005}.black{background:radial-gradient(circle at 32% 24%,#53594b,#151912 73%)}.white{background:radial-gradient(circle at 30% 23%,#fff,#e4e3d9 70%)}.dot{position:absolute;left:50%;top:50%;width:1.8%;aspect-ratio:1;background:#695632;border-radius:50%;transform:translate(-50%,-50%)}.features{display:grid;grid-template-columns:repeat(3,1fr);gap:30px;margin-top:90px;padding:35px 0;border-top:1px solid #dedfd3}.features h2{font-size:16px;font-weight:600}.features p{font-size:13px;margin:0}.number{color:#9d926c;font-family:Georgia,serif;font-size:13px}footer{display:flex;justify-content:space-between;border-top:1px solid #dedfd3;font-size:12px;color:#787e71;padding-top:22px;padding-bottom:32px}footer a{text-decoration:none}@media(max-width:760px){header,main,footer{padding-left:22px;padding-right:22px}.brand small{display:none}main{padding-top:45px}.hero{grid-template-columns:1fr;gap:44px}h1{font-size:46px}.board{max-width:390px;width:90%;margin:0 auto}.features{grid-template-columns:1fr;gap:22px;margin-top:54px}footer{gap:20px;line-height:1.7}}</style></head><body>
-          <header><div class="brand">弈境 <small>GOMOKU STUDIO</small></div><a href="${repo}">查看 GitHub 源码 ↗</a></header>
-          <main><section class="hero"><div><span class="eyebrow">THINK. PLAY. UNDERSTAND.</span><h1>落子有声，<br>思考有迹。</h1><p>一个会陪你思考的五子棋空间。与 AI 切磋，在复盘中发现不足，让每一局都成为下一步的起点。</p>${action}</div><div class="board" role="img" aria-label="五子棋棋盘示意图"><div class="grid"><i class="dot"></i>${[[50,50,'black'],[50,43,'white'],[43,50,'black'],[57,50,'white'],[43,57,'black'],[43,43,'white'],[36,64,'black'],[57,43,'white'],[29,71,'black']].map(([x,y,c])=>`<i class="stone ${c}" style="left:${x}%;top:${y}%"></i>`).join('')}</div></div></section>
-          <section class="features" aria-label="应用功能"><article><span class="number">01 / PLAY</span><h2>与你对弈的 Agent</h2><p>本地引擎随时开局，也可以接入自己的 AI 服务。支持人机对战与同屏双人对战。</p></article><article><span class="number">02 / LEARN</span><h2>读懂每一次选择</h2><p>查看局面、威胁与落子建议，复盘自己的失误，在棋盘上理解改进的方向。</p></article><article><span class="number">03 / KEEP</span><h2>保存值得回看的局</h2><p>SQLite 保存对局记录，逐步回放棋局，并导出 JSON 或 SGF 格式棋谱。</p></article></section></main>
-          <footer><span>弈境 · 开源五子棋应用</span><a href="${repo}/blob/HEAD/docs/DEPLOYMENT.md">部署指南</a><span>15 × 15 · 自由五子棋</span></footer></body></html>`);
-          NODE
+      - name: 构建可直接对弈的网页版
+        run: node scripts/build-pages.mjs
       - uses: actions/upload-pages-artifact@v5
         with:
           path: _site
@@ -64,6 +47,6 @@ jobs:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
     steps:
-      - name: Deploy project page
+      - name: 发布五子棋网页版
         id: deployment
         uses: actions/deploy-pages@v4

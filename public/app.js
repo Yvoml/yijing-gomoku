@@ -1,5 +1,14 @@
 const $ = (selector) => document.querySelector(selector);
 const $$ = (selector) => [...document.querySelectorAll(selector)];
+const browserRuntime = $('meta[name="yijing-runtime"]')?.content === 'browser';
+const appVersion = $('meta[name="yijing-version"]')?.content || '';
+let browserClient;
+let runtimeConfig = { storage: 'sqlite', storagePersistent: true };
+async function getBrowserClient() {
+  browserClient ??= import('./browser/api.js')
+    .then(({ createBrowserAPI }) => createBrowserAPI({ version: appVersion || '0.5.0' }));
+  return browserClient;
+}
 const SIZE = 15, ORIGIN = 30, STEP = 600 / 14;
 const LETTERS = 'ABCDEFGHJKLMNOP';
 const DIFFICULTY = { easy: '入门', standard: '标准', hard: '进阶' };
@@ -53,6 +62,7 @@ function toast(message) {
 }
 function messageOf(error) { return error?.message || '请求未完成，请稍后重试。'; }
 async function api(path, body) {
+  if (browserRuntime) return (await getBrowserClient()).request(path, body);
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 65000);
   try {
@@ -156,7 +166,7 @@ function render() {
   $('#game-title').textContent = replay ? '棋谱复盘' : isAI ? '人机对弈' : '本地双人';
   $('#difficulty-tag').textContent = isAI ? DIFFICULTY[game?.difficulty] || '标准' : '自由对弈';
   $('#move-count').textContent = `第 ${moves.length} 手`;
-  $('#save-status').textContent = game ? '已自动保存' : '准备中';
+  $('#save-status').textContent = game ? runtimeConfig.storagePersistent ? '已自动保存' : '仅本次打开保存' : '准备中';
   $('#black-name').textContent = isAI ? game?.humanColor === 2 ? '弈境 AI · 黑棋' : '你 · 黑棋' : '棋友一 · 黑棋';
   $('#white-name').textContent = isAI ? game?.humanColor === 2 ? '你 · 白棋' : '弈境 AI · 白棋' : '棋友二 · 白棋';
   $('#black-subtitle').textContent = game?.status === 'won' && game.winner === 1 ? '五子连珠 · 获胜' : '先手';
@@ -206,7 +216,8 @@ function render() {
 function updateEngineLabel() {
   const remote = !forceLocal && (provider || serverAI.configured);
   $('#engine-badge').textContent = remote ? 'AI AGENT' : 'LOCAL';
-  $('#connection-label').textContent = game ? '对局服务已连接' : '正在连接';
+  $('#connection-label').textContent = game ? browserRuntime ? '网页版已就绪' : '对局服务已连接' : browserRuntime ? '正在读取棋谱' : '正在连接';
+  $('#storage-label').textContent = browserRuntime ? runtimeConfig.storagePersistent ? '保存在此浏览器' : '仅本次打开保存' : 'SQLite 自动存储';
   $('#settings-state').textContent = provider ? `当前使用：${provider.model || '自定义模型'}。密钥在刷新或关闭页面后清除。` : forceLocal ? '当前使用内置本地引擎，无需密钥。' : serverAI.configured ? `服务端已配置 AI${serverAI.model ? `：${serverAI.model}` : ''}，也可以填写自己的服务商。` : '当前使用内置本地引擎，连接 AI 服务后可获取模型讲解。';
 }
 function renderAnalysis(result) {
@@ -386,6 +397,22 @@ $('#export').addEventListener('click', () => {
   $('#export-menu').hidden = hidden;
   $('#export').setAttribute('aria-expanded', String(!hidden));
 });
+for (const format of ['sgf', 'json']) {
+  $(`#export-${format}`).addEventListener('click', async event => {
+    if (!browserRuntime) return;
+    event.preventDefault();
+    if (busy || !game) return;
+    try {
+      const file = await (await getBrowserClient()).exportGame(game.id, format);
+      const blob = new Blob([file.content], { type: file.contentType });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url; link.download = file.filename;
+      document.body.append(link); link.click(); link.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 10000);
+    } catch (error) { toast(messageOf(error)); }
+  });
+}
 document.addEventListener('click', event => {
   if (!event.target.closest('.export-wrap')) {
     $('#export-menu').hidden = true;
@@ -506,10 +533,18 @@ $('#exit-replay').addEventListener('click', exitReplay);
 
 async function initialize() {
   render();
-  setBusy(true, '正在连接对局服务');
+  setBusy(true, browserRuntime ? '正在读取本地棋谱' : '正在连接对局服务');
   try {
     const config = await api('/api/config');
+    runtimeConfig = { ...runtimeConfig, ...config };
     serverAI = config.ai || serverAI;
+    if (browserRuntime) {
+      $('#settings-note').textContent = '密钥仅保留在当前页面内存中，刷新后需重新输入。网页版由浏览器直接连接你填写的 AI 服务，服务商需允许跨域访问；连接失败会使用本地引擎。';
+      $('#storage-note').textContent = runtimeConfig.storagePersistent
+        ? '对局保存在当前浏览器。清除网站数据或更换浏览器后不会自动同步，请及时导出棋谱。'
+        : '当前浏览器无法持久保存数据，对局只在本次打开期间保留，请及时导出棋谱。';
+      $('#storage-note').hidden = false;
+    }
     const existingId = loadPreference('gomoku.currentGame');
     let result;
     if (existingId) {
@@ -522,17 +557,15 @@ async function initialize() {
     if (!result) result = await api('/api/games', {mode:'ai',difficulty:'standard',humanColor:1});
     acceptGame(result.game, result.analysis);
     await maybeAgent();
+    if (browserRuntime && !runtimeConfig.storagePersistent) toast('当前浏览器无法持久保存对局，请在关闭页面前导出棋谱。');
   } catch (error) {
     toast(messageOf(error));
-    $('#connection-label').textContent = '服务连接失败';
-    $('#insight-title').textContent = '暂时无法连接对局服务。';
-    $('#insight-text').textContent = '请确认后端正在运行，稍后刷新页面。也可以点击「开启新对局」重试。';
   } finally {
     setBusy(false);
     if (!game) {
-      $('#connection-label').textContent = '服务连接失败';
-      $('#insight-title').textContent = '暂时无法连接对局服务。';
-      $('#insight-text').textContent = '请确认后端正在运行，稍后刷新页面。也可以点击「开启新对局」重试。';
+      $('#connection-label').textContent = browserRuntime ? '棋谱读取失败' : '服务连接失败';
+      $('#insight-title').textContent = browserRuntime ? '暂时无法打开本地棋谱。' : '暂时无法连接对局服务。';
+      $('#insight-text').textContent = browserRuntime ? '请确认浏览器允许本站保存数据，稍后刷新重试。' : '请确认后端正在运行，稍后刷新页面。也可以点击「开启新对局」重试。';
     }
   }
 }

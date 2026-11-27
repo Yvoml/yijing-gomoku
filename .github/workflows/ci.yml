@@ -23,9 +23,9 @@ jobs:
         with:
           node-version: '24'
           package-manager-cache: false
-      - name: Check JavaScript syntax
+      - name: 检查 JavaScript 语法
         run: |
           node --check server.js
-          find lib public test -type f -name '*.js' -print0 | xargs -0 -r -n1 node --check
-      - name: Run engine and API tests
+          find lib public browser scripts test -type f \( -name '*.js' -o -name '*.mjs' \) -print0 | xargs -0 -r -n1 node --check
+      - name: 验证引擎、接口与网页版
         run: node --test
