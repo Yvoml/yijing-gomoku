@@ -116,7 +116,7 @@ function renderBoard() {
   const moves = displayedMoves();
   const last = moves.at(-1);
   const wins = winningCells(board);
-  let markup = '<defs><radialGradient id="black-stone" cx="34%" cy="26%" r="75%"><stop offset="0" stop-color="#5b5e53"/><stop offset=".52" stop-color="#2a2e27"/><stop offset="1" stop-color="#161e19"/></radialGradient><radialGradient id="white-stone" cx="35%" cy="28%" r="75%"><stop offset="0" stop-color="#fffef6"/><stop offset=".65" stop-color="#f5f2df"/><stop offset="1" stop-color="#d7d6c4"/></radialGradient></defs>';
+  let markup = '<defs><radialGradient id="black-stone" cx="34%" cy="26%" r="75%"><stop offset="0" stop-color="#64717b"/><stop offset=".52" stop-color="#293944"/><stop offset="1" stop-color="#14232d"/></radialGradient><radialGradient id="white-stone" cx="35%" cy="28%" r="75%"><stop offset="0" stop-color="#ffffff"/><stop offset=".65" stop-color="#edf2f3"/><stop offset="1" stop-color="#c3ced3"/></radialGradient></defs>';
   for (let i = 0; i < SIZE; i++) {
     const p = ORIGIN + i * STEP;
     markup += `<path class="grid-line" d="M${ORIGIN} ${p}H630M${p} ${ORIGIN}V630"/>`;
@@ -128,9 +128,9 @@ function renderBoard() {
       const cx = ORIGIN + x * STEP, cy = ORIGIN + y * STEP, value = board[y][x];
       markup += `<g role="gridcell" id="cell-${x}-${y}" aria-label="${coord({x,y})}，${value ? value === 1 ? '黑棋' : '白棋' : '空位'}" aria-selected="${selected.x === x && selected.y === y}"><rect x="${cx - STEP / 2}" y="${cy - STEP / 2}" width="${STEP}" height="${STEP}" fill="transparent"/>`;
       if (value) {
-        markup += `<circle class="stone-shadow" cx="${cx}" cy="${cy}" r="18.4" fill="url(#${value === 1 ? 'black' : 'white'}-stone)" stroke="${value === 1 ? '#20271c' : '#d0c7ad'}" stroke-width=".8"/>`;
-        if (wins.has(`${x},${y}`)) markup += `<circle cx="${cx}" cy="${cy}" r="21" fill="none" stroke="#b88b4b" stroke-width="2.4"/>`;
-        if (last?.x === x && last?.y === y) markup += `<circle cx="${cx}" cy="${cy}" r="3.6" fill="${value === 1 ? '#dfc48d' : '#9d793f'}"/>`;
+        markup += `<circle class="stone-shadow" cx="${cx}" cy="${cy}" r="18.4" fill="url(#${value === 1 ? 'black' : 'white'}-stone)" stroke="${value === 1 ? '#20303b' : '#b6c5cd'}" stroke-width=".8"/>`;
+        if (wins.has(`${x},${y}`)) markup += `<circle cx="${cx}" cy="${cy}" r="21" fill="none" stroke="#994958" stroke-width="2.4"/>`;
+        if (last?.x === x && last?.y === y) markup += `<circle cx="${cx}" cy="${cy}" r="3.6" fill="${value === 1 ? '#d8b3b9' : '#954756'}"/>`;
         if (replayAt !== null) {
           const number = moves.findIndex(move => move.x === x && move.y === y) + 1;
           markup += `<text x="${cx}" y="${cy + .5}" text-anchor="middle" dominant-baseline="middle" fill="${value === 1 ? '#f1e5c9' : '#6a6555'}" font-size="13" font-family="Arial,sans-serif">${number}</text>`;

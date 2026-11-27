@@ -8,18 +8,21 @@
   <title>弈境 · Gomoku Studio</title>
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='16' fill='%23242824'/%3E%3Ccircle cx='23' cy='23' r='10' fill='%23e3b97d'/%3E%3Ccircle cx='42' cy='42' r='10' fill='%23f6f4ec'/%3E%3C/svg%3E">
   <link rel="stylesheet" href="./styles.css">
+  <link rel="stylesheet" href="./winter.css">
   <script type="module" src="./app.js"></script>
+  <script type="module" src="./scene.js"></script>
 </head>
-<body>
+<body class="winter-theme">
+  <div class="weather-scene" aria-hidden="true"><div class="landscape"></div><div class="wind-branches"></div><div class="scene-mist"></div><canvas id="weather-canvas"></canvas></div>
   <header class="site-header">
     <a class="brand" href="./" aria-label="弈境首页"><span class="brand-mark" aria-hidden="true"><i></i><i></i><i></i><i></i></span><span class="brand-chinese">弈境</span><span class="brand-english">GOMOKU STUDIO</span></a>
     <nav aria-label="主导航"><button class="nav-link active" id="nav-play">对弈<span>PLAY</span></button><button class="nav-link" id="nav-history">棋谱<span>LIBRARY</span></button><button class="nav-link" id="nav-settings">设置<span>SETTINGS</span></button></nav>
-    <div class="header-status"><span class="status-dot"></span><span id="connection-label">正在连接</span></div>
+    <div class="scene-controls"><button id="toggle-weather" type="button" aria-pressed="true" aria-label="暂停风雪"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" aria-hidden="true"><path d="M12 2v20M3.4 7l17.2 10M3.4 17 20.6 7M9 4l3 3 3-3M9 20l3-3 3 3M4 10l4-1-1-4M17 19l-1-4 4-1M4 14l4 1-1 4M17 5l-1 4 4 1"/></svg><span id="weather-state">暂停风雪</span></button></div><div class="header-status"><span class="status-dot"></span><span id="connection-label">正在连接</span></div>
   </header>
 
   <main class="workspace">
     <section class="page-intro">
-      <div><p class="eyebrow"><span class="tiny-rule"></span> THE ART OF FIVE IN A ROW</p><h1>每一步，皆有章法<span>。</span></h1><p class="intro-copy">落子之间，遇见更好的自己。与 AI 对弈，让思考更进一步。</p></div>
+      <div><p class="eyebrow"><span class="tiny-rule"></span> PLUM · SNOW · GOMOKU</p><h1>一局清欢，<br class="mobile-linebreak">落子听雪<span>。</span></h1><p class="intro-copy">红梅映雪，墨落成局。与 AI 对弈，在方寸间静听风声。</p></div>
       <button id="new-game" class="button button-dark"><span data-icon="plus"></span>开启新对局<span class="button-arrow">↗</span></button>
     </section>
 

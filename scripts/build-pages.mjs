@@ -83,7 +83,7 @@ export async function buildPages({ outputDir = '_site' } = {}) {
   let html = files.get('index.html').toString('utf8');
   html = html.replace(/\s*<meta\s+name=["']yijing-(?:runtime|version|build)["'][^>]*>/gi, '');
   html = html.replace('</head>', `  <meta name="yijing-runtime" content="browser">\n  <meta name="yijing-version" content="${pkg.version}">\n  <meta name="yijing-build" content="${buildHash}">\n</head>`);
-  for (const asset of ['app.js', 'styles.css']) {
+  for (const asset of ['app.js', 'styles.css', 'winter.css', 'scene.js']) {
     html = html.replace(new RegExp(`((?:src|href)=["'])(?:\\./|/)?${asset.replace('.', '\\.')}[^"']*(["'])`, 'g'), `$1./${asset}?v=${buildHash}$2`);
   }
   if (/(?:src|href)=["']\/(?!\/)/i.test(html)) throw new Error('网页仍包含站点根路径资源，无法安全部署到项目子路径。');

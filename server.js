@@ -28,11 +28,11 @@ export function createApp({ dataDir = process.env.DATA_DIR || join(root,'data') 
       const url = new URL(req.url,'http://localhost');
       if (!url.pathname.startsWith('/api/')) {
         if (!['GET','HEAD'].includes(req.method)) throw error(405,'METHOD_NOT_ALLOWED','请求方法不支持。');
-        const paths = { '/':'index.html','/index.html':'index.html','/styles.css':'styles.css','/app.js':'app.js','/favicon.svg':'favicon.svg' };
+        const paths = { '/':'index.html','/index.html':'index.html','/styles.css':'styles.css','/app.js':'app.js','/favicon.svg':'favicon.svg','/winter.css':'winter.css','/scene.js':'scene.js','/assets/winter-plum.png':'assets/winter-plum.png' };
         const filename = paths[url.pathname];
         if (!filename) throw error(404,'NOT_FOUND','页面不存在。');
         let data;try {data=await readFile(join(root,'public',filename));} catch {throw error(404,'NOT_FOUND','文件不存在。');}
-        const type = {'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.svg':'image/svg+xml'}[extname(filename)];
+        const type = {'.html':'text/html; charset=utf-8','.css':'text/css; charset=utf-8','.js':'text/javascript; charset=utf-8','.svg':'image/svg+xml','.png':'image/png'}[extname(filename)];
         res.writeHead(200,{'Content-Type':type,'Cache-Control':filename.endsWith('.html')?'no-cache':'public, max-age=300'});
         res.end(req.method==='HEAD'?undefined:data);return;
       }
