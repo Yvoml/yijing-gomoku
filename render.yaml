@@ -1,0 +1,27 @@
+# This Blueprint creates a paid service and persistent disk only after you
+# review and apply it in your own Render account. No AI key is required.
+services:
+  - type: web
+    name: yijing-gomoku
+    runtime: docker
+    plan: starter
+    region: singapore
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    autoDeployTrigger: checksPass
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: DATA_DIR
+        value: /var/data
+      - key: AI_BASE_URL
+        value: https://api.openai.com/v1
+      - key: AI_MODEL
+        value: gpt-4o-mini
+    disk:
+      name: gomoku-data
+      mountPath: /var/data
+      sizeGB: 1
