@@ -8,6 +8,16 @@ function line(board, points, player = BLACK) {
   return board;
 }
 
+test('coaching coordinates match the visible board after column H', () => {
+  const board = line(createBoard(), [[4,7],[5,7],[6,7],[7,7]]);
+  board[7][3] = WHITE;
+  const position = analyzePosition(board, BLACK);
+  assert.equal(position.recommendation.x, 8);
+  assert.match(position.summary, /J8/);
+  assert.ok(position.threats.some(threat => threat.x === 8 && threat.label.includes('J8')));
+  assert.match(analyzeMove(board, {x:0,y:0,player:BLACK}).explanation, /J8/);
+});
+
 test('creates independent rows and reconstructs legal moves', () => {
   const board = createBoard();
   assert.equal(board.length, SIZE);

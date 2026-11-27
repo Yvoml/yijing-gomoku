@@ -196,3 +196,51 @@ test('difficulty affects local choices, provider candidates, and fallback withou
     assert.match(result.analysis.summary, /F9/);
   });
 });
+
+test('shared deployment credentials ignore visitor endpoints and models; own credentials can customize them', async () => {
+  const names = ['ALLOW_SHARED_AI', 'AI_API_KEY', 'AI_BASE_URL', 'AI_MODEL'];
+  const previous = Object.fromEntries(names.map(name => [name, process.env[name]]));
+  let trustedRequests = 0;
+  let visitorRequests = 0;
+  try {
+    await mockEndpoint((body, request, response) => {
+      trustedRequests++;
+      assert.equal(request.headers.authorization, 'Bearer deployment-private-key');
+      assert.equal(body.model, 'trusted-model');
+      completion(response, { content: '{"x":7,"y":7,"explanation":"中心布局。"}' });
+    }, async trustedBaseUrl => {
+      process.env.ALLOW_SHARED_AI = 'true';
+      process.env.AI_API_KEY = 'deployment-private-key';
+      process.env.AI_BASE_URL = trustedBaseUrl;
+      process.env.AI_MODEL = 'trusted-model';
+      await mockEndpoint((body, request, response) => {
+        visitorRequests++;
+        assert.equal(request.headers.authorization, 'Bearer visitor-own-key');
+        assert.equal(body.model, 'visitor-model');
+        completion(response, { content: '{"x":7,"y":7,"explanation":"保持中心联系。"}' });
+      }, async visitorBaseUrl => {
+        const sharedResult = await runAgent({
+          board: createBoard(), player: BLACK,
+          ai: { baseUrl: visitorBaseUrl, model: 'visitor-model' },
+        });
+        assert.equal(sharedResult.agent.source, 'remote');
+        assert.equal(trustedRequests, 1);
+        assert.equal(visitorRequests, 0, 'shared credential must never reach visitor endpoint');
+        assert.equal(JSON.stringify(sharedResult).includes('deployment-private-key'), false);
+        const ownResult = await runAgent({
+          board: createBoard(), player: BLACK,
+          ai: { baseUrl: visitorBaseUrl, model: 'visitor-model', apiKey: 'visitor-own-key' },
+        });
+        assert.equal(ownResult.agent.source, 'remote');
+        assert.equal(trustedRequests, 1);
+        assert.equal(visitorRequests, 1);
+        assert.equal(JSON.stringify(ownResult).includes('visitor-own-key'), false);
+      });
+    });
+  } finally {
+    for (const name of names) {
+      if (previous[name] === undefined) delete process.env[name];
+      else process.env[name] = previous[name];
+    }
+  }
+});
