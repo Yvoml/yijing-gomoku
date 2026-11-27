@@ -175,6 +175,13 @@ test('difficulty affects local choices, provider candidates, and fallback withou
   assert.deepEqual([easy.analysis.recommendation.x, easy.analysis.recommendation.y], [5, 6]);
   assert.match(easy.analysis.summary, /F9/);
   assert.deepEqual([hard.analysis.recommendation.x, hard.analysis.recommendation.y], [4, 7]);
+  const rightBoard = boardFromMoves([
+    { x: 9, y: 8, player: BLACK }, { x: 9, y: 4, player: WHITE },
+    { x: 10, y: 6, player: BLACK }, { x: 8, y: 7, player: WHITE },
+  ]);
+  const right = await runAgent({ board: rightBoard, player: BLACK, difficulty: 'easy', ai: { disabled: true } });
+  assert.deepEqual([right.move.x, right.move.y], [9, 6]);
+  assert.match(right.analysis.summary, /K9/);
   await mockEndpoint((body, _request, response) => {
     const input = JSON.parse(body.messages[1].content);
     assert.deepEqual([input.candidates[0].x, input.candidates[0].y], [4, 7]);

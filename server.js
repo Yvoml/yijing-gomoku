@@ -6,6 +6,7 @@ import { resolve, join, extname } from 'node:path';
 import { openStore } from './lib/db.js';
 import { SIZE, boardFromMoves, getWinner, isDraw, analyzePosition, analyzeMove } from './lib/engine.js';
 import { runAgent } from './lib/ai.js';
+import pkg from './package.json' with { type: 'json' };
 
 const root = fileURLToPath(new URL('.',import.meta.url));
 const cookieName = 'yijing_session';
@@ -35,7 +36,7 @@ export function createApp({ dataDir = process.env.DATA_DIR || join(root,'data') 
         res.writeHead(200,{'Content-Type':type,'Cache-Control':filename.endsWith('.html')?'no-cache':'public, max-age=300'});
         res.end(req.method==='HEAD'?undefined:data);return;
       }
-      if (req.method==='GET' && url.pathname==='/api/health') {send(200,{status:'ok',storage:'sqlite',version:'0.4.0'});return;}
+      if (req.method==='GET' && url.pathname==='/api/health') {send(200,{status:'ok',storage:'sqlite',version:pkg.version});return;}
       if (!['GET','POST'].includes(req.method)) throw error(405,'METHOD_NOT_ALLOWED','请求方法不支持。');
       // Browsers may only change games from this application's own origin.
       if (req.headers['sec-fetch-site']==='cross-site') throw error(403,'ORIGIN_DENIED','请从本站访问对局。');
@@ -132,7 +133,7 @@ export function createApp({ dataDir = process.env.DATA_DIR || join(root,'data') 
 export function toSGF(game) {
   const esc=text=>String(text).replace(/\\/g,'\\\\').replace(/\]/g,'\\]');
   const result=game.winner?`${game.winner===1?'B':'W'}+`:game.status==='draw'?'0':'?';
-  return `(;GM[4]FF[4]CA[UTF-8]AP[Yijing:0.4.0]SZ[15]RU[Freestyle]GN[${esc(game.title)}]DT[${game.createdAt.slice(0,10)}]RE[${result}]PB[${game.mode==='ai'&&game.humanColor===2?'Yijing AI':'Black'}]PW[${game.mode==='ai'&&game.humanColor===1?'Yijing AI':'White'}]${game.moves.map(m=>`;${m.player===1?'B':'W'}[${String.fromCharCode(97+m.x)}${String.fromCharCode(97+m.y)}]C[${esc(m.explanation||'')}]`).join('')})\n`;
+  return `(;GM[4]FF[4]CA[UTF-8]AP[Yijing:${pkg.version}]SZ[15]RU[Freestyle]GN[${esc(game.title)}]DT[${game.createdAt.slice(0,10)}]RE[${result}]PB[${game.mode==='ai'&&game.humanColor===2?'Yijing AI':'Black'}]PW[${game.mode==='ai'&&game.humanColor===1?'Yijing AI':'White'}]${game.moves.map(m=>`;${m.player===1?'B':'W'}[${String.fromCharCode(97+m.x)}${String.fromCharCode(97+m.y)}]C[${esc(m.explanation||'')}]`).join('')})\n`;
 }
 
 if(process.argv[1]&&import.meta.url===pathToFileURL(resolve(process.argv[1])).href) {
